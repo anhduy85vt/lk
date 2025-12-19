@@ -108,7 +108,7 @@
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
         async function fetchData() {
-            if(CLOUD_URL === "DÁN_LINK_WEB_APP_URL_CỦA_BẠN_Ở_ĐÂY") return;
+            if(CLOUD_URL === "https://script.google.com/macros/s/AKfycbyCL6l-2n8bWzQwmAJVT4gzxJBDAhLnQz6ofVLRtGw/dev") return;
             const res = await fetch(CLOUD_URL);
             const data = await res.json();
             const list = document.getElementById('inventory-list');
@@ -130,7 +130,7 @@
 
         async function saveData(e) {
             e.preventDefault();
-            if(CLOUD_URL === "DÁN_LINK_WEB_APP_URL_CỦA_BẠN_Ở_ĐÂY") return alert("Bạn chưa dán link Google Cloud!");
+            if(CLOUD_URL === "https://script.google.com/macros/s/AKfycbyCL6l-2n8bWzQwmAJVT4gzxJBDAhLnQz6ofVLRtGw/dev") return alert("Bạn chưa dán link Google Cloud!");
             
             document.getElementById('modal-actions').classList.add('hidden');
             document.getElementById('modal-loading').classList.remove('hidden');
@@ -158,3 +158,4 @@
     </script>
 </body>
 </html>
+
