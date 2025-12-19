@@ -17,22 +17,22 @@
 <body class="p-4 md:p-6">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
-        <div class="glass w-full max-w-sm p-10 rounded-[40px] text-center border-t-4 border-emerald-500 shadow-2xl">
+        <form id="login-form" onsubmit="handleLogin(event)" class="glass w-full max-w-sm p-10 rounded-[40px] text-center border-t-4 border-emerald-500 shadow-2xl">
             <h1 class="text-3xl font-black italic text-emerald-400 mb-2 uppercase">ANH DUY TECH</h1>
             <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-8">Hệ Thống Nhập Hàng</p>
             <div class="space-y-4">
-                <input id="user" type="text" placeholder="User" class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center">
-                <input id="pass" type="password" placeholder="Pass" class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center">
-                <button onclick="handleLogin()" class="w-full bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-500 transition-all">ĐĂNG NHẬP</button>
+                <input id="user" name="username" type="text" autocomplete="username" placeholder="User" class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center">
+                <input id="pass" name="password" type="password" autocomplete="current-password" placeholder="Pass" class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center">
+                <button type="submit" class="w-full bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-500 transition-all">ĐĂNG NHẬP (ENTER)</button>
             </div>
-        </div>
+        </form>
     </div>
 
     <div id="main-content" class="max-w-7xl mx-auto hidden">
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div>
                 <h1 class="text-3xl font-black italic text-emerald-400 uppercase tracking-tighter">ANH DUY TECH</h1>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em]">Kho Linh Kiện & Phụ Kiện</p>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em]">Quản Lý Nhập Linh Kiện</p>
             </div>
             <div class="flex gap-2">
                 <button onclick="exportToExcel()" class="bg-white/5 hover:bg-emerald-600 px-5 py-3 rounded-2xl font-bold flex items-center gap-2 border border-white/10 transition-all">
@@ -49,7 +49,7 @@
 
         <div class="relative mb-6">
             <i class="fas fa-search absolute left-4 top-4 text-gray-500"></i>
-            <input id="search-input" oninput="renderInventory()" type="text" placeholder="Tìm tên linh kiện, nhà cung cấp..." class="w-full p-4 pl-12 rounded-2xl outline-none glass focus:border-emerald-500">
+            <input id="search-input" oninput="renderInventory()" type="text" placeholder="Tìm nhanh linh kiện..." class="w-full p-4 pl-12 rounded-2xl outline-none glass focus:border-emerald-500">
         </div>
 
         <div class="glass rounded-[30px] overflow-hidden border border-white/5 shadow-2xl overflow-x-auto">
@@ -59,9 +59,8 @@
                         <th class="p-5">Ngày</th>
                         <th class="p-5">Linh Kiện</th>
                         <th class="p-5 text-center">SL</th>
-                        <th class="p-5">Giá Nhập (đ)</th>
+                        <th class="p-5">Giá Nhập</th>
                         <th class="p-5 text-center">Thành Tiền</th>
-                        <th class="p-5">Đại Lý</th>
                         <th class="p-5 text-right">Thao Tác</th>
                     </tr>
                 </thead>
@@ -71,54 +70,55 @@
     </div>
 
     <div id="modal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[150] p-4 backdrop-blur-md">
-        <div class="glass w-full max-w-md p-8 rounded-[40px] border-2 border-emerald-500/30 shadow-2xl">
+        <form onsubmit="saveData(event)" class="glass w-full max-w-md p-8 rounded-[40px] border-2 border-emerald-500/30">
             <h2 id="modal-title" class="text-2xl font-black mb-6 uppercase text-emerald-400 italic">Nhập Đơn Hàng</h2>
             <input type="hidden" id="f-id">
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Ngày nhập</label>
-                        <input id="f-date" type="date" class="w-full p-4 rounded-2xl outline-none text-sm">
+                        <label class="text-[10px] font-bold text-gray-500 ml-2">NGÀY</label>
+                        <input id="f-date" type="date" class="w-full p-4 rounded-2xl outline-none text-sm" required>
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Số lượng</label>
-                        <input id="f-qty" type="number" class="w-full p-4 rounded-2xl outline-none text-sm text-center font-bold">
+                        <label class="text-[10px] font-bold text-gray-500 ml-2">SỐ LƯỢNG</label>
+                        <input id="f-qty" type="number" class="w-full p-4 rounded-2xl outline-none text-sm text-center font-bold" required>
                     </div>
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Tên linh kiện</label>
-                    <input id="f-name" type="text" placeholder="Ví dụ: SSD Kingston 240GB" class="w-full p-4 rounded-2xl outline-none text-sm">
+                    <label class="text-[10px] font-bold text-gray-500 ml-2">TÊN LINH KIỆN</label>
+                    <input id="f-name" type="text" placeholder="Tên món hàng..." class="w-full p-4 rounded-2xl outline-none text-sm" required>
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Giá nhập (Chỉ nhập số hàng nghìn)</label>
+                    <label class="text-[10px] font-bold text-gray-500 ml-2">GIÁ NHẬP (X1000)</label>
                     <div class="relative">
-                        <input id="f-price" type="number" placeholder="500" class="w-full p-4 rounded-2xl outline-none text-sm text-emerald-400 font-black pr-16">
-                        <span class="absolute right-4 top-4 text-gray-500 font-bold">.000 VNĐ</span>
+                        <input id="f-price" type="number" placeholder="500" class="w-full p-4 rounded-2xl outline-none text-sm text-emerald-400 font-black pr-16" required>
+                        <span class="absolute right-4 top-4 text-gray-500 font-bold text-xs">.000đ</span>
                     </div>
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Nhà cung cấp</label>
+                    <label class="text-[10px] font-bold text-gray-500 ml-2">NHÀ CUNG CẤP</label>
                     <input id="f-supplier" type="text" class="w-full p-4 rounded-2xl outline-none text-sm">
                 </div>
-                <textarea id="f-note" placeholder="Ghi chú (Serial, Mã hàng...)" class="w-full p-4 rounded-2xl outline-none text-sm h-20"></textarea>
+                <textarea id="f-note" placeholder="Ghi chú..." class="w-full p-4 rounded-2xl outline-none text-sm h-16"></textarea>
             </div>
             <div class="flex gap-4 mt-8">
-                <button onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:text-white uppercase text-xs">Hủy</button>
-                <button onclick="saveData()" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest text-sm shadow-lg shadow-emerald-500/30">Xác Nhận Lưu</button>
+                <button type="button" onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:text-white uppercase text-xs">Hủy</button>
+                <button type="submit" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest text-sm">LƯU ĐƠN (ENTER)</button>
             </div>
-        </div>
+        </form>
     </div>
 
     <script>
         const AUTH = { user: "admin", pass: "123456" };
         let inventory = JSON.parse(localStorage.getItem('adtech_inventory')) || [];
 
-        function handleLogin() {
+        function handleLogin(e) {
+            e.preventDefault(); // Ngăn trang web tải lại khi nhấn Enter
             if(document.getElementById('user').value === AUTH.user && document.getElementById('pass').value === AUTH.pass) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 renderInventory();
-            } else { alert("Sai tài khoản!"); }
+            } else { alert("Sai mật khẩu!"); }
         }
 
         function logout() { location.reload(); }
@@ -130,6 +130,7 @@
             document.getElementById('f-date').valueAsDate = new Date();
             document.getElementById('f-qty').value = 1;
             document.getElementById('modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('f-name').focus(), 100); // Tự động đưa con trỏ vào ô tên
         }
 
         function openEditModal(id) {
@@ -138,7 +139,6 @@
             document.getElementById('f-date').value = item.date;
             document.getElementById('f-name').value = item.name;
             document.getElementById('f-qty').value = item.qty;
-            // KHI SỬA: CHIA LẠI CHO 1000 ĐỂ HIỆN SỐ NGẮN
             document.getElementById('f-price').value = item.price / 1000;
             document.getElementById('f-supplier').value = item.supplier;
             document.getElementById('f-note').value = item.note;
@@ -148,9 +148,9 @@
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
-        function saveData() {
+        function saveData(e) {
+            if(e) e.preventDefault();
             const id = document.getElementById('f-id').value;
-            // TỰ ĐỘNG NHÂN 1000 KHI LƯU
             const rawPrice = parseFloat(document.getElementById('f-price').value) || 0;
             const finalPrice = rawPrice * 1000;
 
@@ -162,8 +162,6 @@
                 supplier: document.getElementById('f-supplier').value,
                 note: document.getElementById('f-note').value
             };
-
-            if(!data.name) return alert("Nhập tên linh kiện!");
 
             if(id) {
                 const idx = inventory.findIndex(x => x.id == id);
@@ -203,12 +201,9 @@
                             <td class="p-5 text-center font-black text-white text-lg">${item.qty}</td>
                             <td class="p-5 font-bold text-slate-300 tracking-tighter">${item.price.toLocaleString()}đ</td>
                             <td class="p-5 text-center font-black text-white tracking-tighter">${total.toLocaleString()}đ</td>
-                            <td class="p-5 text-gray-400 text-[11px] font-black uppercase">${item.supplier}</td>
-                            <td class="p-5 text-right">
-                                <div class="flex justify-end gap-2">
-                                    <button onclick="openEditModal(${item.id})" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-600 hover:text-white transition-all"><i class="fas fa-edit text-xs"></i></button>
-                                    <button onclick="deleteItem(${item.id})" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-600 hover:text-white transition-all"><i class="fas fa-trash text-xs"></i></button>
-                                </div>
+                            <td class="p-5 text-right flex justify-end gap-2 items-center h-[90px]">
+                                <button onclick="openEditModal(${item.id})" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-600 hover:text-white transition-all"><i class="fas fa-edit text-xs"></i></button>
+                                <button onclick="deleteItem(${item.id})" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-600 hover:text-white transition-all"><i class="fas fa-trash text-xs"></i></button>
                             </td>
                         </tr>
                     `;
