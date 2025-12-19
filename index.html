@@ -85,92 +85,107 @@
             </div>
         </form>
     </div>
+  <script>
+    const AUTH = { user: "ADMIN", pass: "123456" };
+    // Đảm bảo link này là link Web App (kết thúc bằng /exec)
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx8i4q-0HJmwSbHY3igg4OIrhHc4hM1HHW9W_NoYoQlaZ5Kihy39k9tbgbxIZGNcr8X/exec"; 
 
-    <script>
-        // CẤU HÌNH TÀI KHOẢN VÀ LINK
-        const AUTH = { user: "ADMIN", pass: "123456" };
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx8i4q-0HJmwSbHY3igg4OIrhHc4hM1HHW9W_NoYoQlaZ5Kihy39k9tbgbxIZGNcr8X/exec"; 
+    function handleLogin() {
+        if(document.getElementById('username').value === AUTH.user && document.getElementById('password').value === AUTH.pass) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            fetchData();
+        } else { alert("Sai mật khẩu!"); }
+    }
 
-        function handleLogin() {
-            if(document.getElementById('username').value === AUTH.user && document.getElementById('password').value === AUTH.pass) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                fetchData();
-            } else { alert("Sai mật khẩu!"); }
-        }
+    function openAddModal() {
+        document.getElementById('modal').classList.remove('hidden');
+        document.getElementById('f-date').valueAsDate = new Date();
+        document.getElementById('f-name').focus();
+    }
 
-        function openAddModal() {
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('f-date').valueAsDate = new Date();
-            document.getElementById('f-name').focus();
-        }
+    function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+    // --- HÀM LẤY DỮ LIỆU (SỬA LỖI KHÔNG LOAD) ---
+    async function fetchData() {
+        const list = document.getElementById('inventory-list');
+        try {
+            // Thêm mốc thời gian để tránh trình duyệt lấy dữ liệu cũ (Cache)
+            const res = await fetch(CLOUD_URL + "?t=" + new Date().getTime());
+            const data = await res.json();
+            
+            list.innerHTML = '';
+            
+            // Kiểm tra nếu sheet chỉ có tiêu đề hoặc trống
+            if (!data || data.length <= 1) {
+                list.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-500 uppercase font-bold">Chưa có dữ liệu nào trên Cloud</td></tr>';
+                return;
+            }
 
-        // HÀM LẤY DỮ LIỆU TỪ SHEET
-        async function fetchData() {
-            try {
-                const res = await fetch(CLOUD_URL);
-                const data = await res.json();
-                const list = document.getElementById('inventory-list');
-                list.innerHTML = '';
-                
-                // Hiển thị dữ liệu lên bảng
-                data.slice(1).reverse().forEach(item => {
+            // Hiển thị dữ liệu (Đảo ngược để cái mới nhất nằm trên cùng)
+            data.slice(1).reverse().forEach(item => {
+                // Chỉ hiển thị nếu dòng đó có tên linh kiện (item[1])
+                if (item[1]) {
                     list.innerHTML += `
                         <tr class="hover:bg-white/[0.02] border-b border-white/5 transition-all">
-                            <td class="p-5 text-gray-500 text-[11px] font-bold">${item[0]}</td>
-                            <td class="p-5 font-black text-emerald-400 uppercase tracking-tighter">${item[1]}</td>
-                            <td class="p-5 font-bold text-blue-400 uppercase text-[11px]">${item[2]}</td>
-                            <td class="p-5 text-center font-black text-white text-lg">${item[3]}</td>
-                            <td class="p-5 font-bold text-white tracking-tighter">${(item[4]*1).toLocaleString()}đ</td>
+                            <td class="p-5 text-gray-500 text-[11px] font-bold">${item[0] || ''}</td>
+                            <td class="p-5 font-black text-emerald-400 uppercase tracking-tighter">${item[1] || ''}</td>
+                            <td class="p-5 font-bold text-blue-400 uppercase text-[11px]">${item[2] || ''}</td>
+                            <td class="p-5 text-center font-black text-white text-lg">${item[3] || 0}</td>
+                            <td class="p-5 font-bold text-white tracking-tighter">${(Number(item[4]) || 0).toLocaleString()}đ</td>
                         </tr>
                     `;
-                });
-            } catch (err) {
-                console.error("Lỗi:", err);
-                document.getElementById('inventory-list').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400 font-bold uppercase">Lỗi kết nối Cloud hoặc Sheet chưa có dữ liệu!</td></tr>';
-            }
+                }
+            });
+        } catch (err) {
+            console.error("Lỗi Load:", err);
+            list.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-amber-500 font-bold uppercase">Đang đồng bộ dữ liệu... Vui lòng chờ 3 giây rồi nhấn Refresh</td></tr>';
+            // Tự động thử lại sau 3 giây nếu lỗi
+            setTimeout(fetchData, 3000);
         }
+    }
 
-        // HÀM GỬI DỮ LIỆU LÊN SHEET
-        async function saveData(e) {
-            e.preventDefault();
-            
-            document.getElementById('modal-actions').classList.add('hidden');
-            document.getElementById('modal-loading').classList.remove('hidden');
+    // --- HÀM LƯU DỮ LIỆU ---
+    async function saveData(e) {
+        e.preventDefault();
+        document.getElementById('modal-actions').classList.add('hidden');
+        document.getElementById('modal-loading').classList.remove('hidden');
 
-            const payload = {
-                action: "save",
-                date: document.getElementById('f-date').value,
-                name: document.getElementById('f-name').value,
-                qty: document.getElementById('f-qty').value,
-                price: document.getElementById('f-price').value * 1000,
-                supplier: document.getElementById('f-supplier').value,
-                note: document.getElementById('f-note').value
-            };
+        const payload = {
+            action: "save",
+            date: document.getElementById('f-date').value,
+            name: document.getElementById('f-name').value,
+            qty: document.getElementById('f-qty').value,
+            price: document.getElementById('f-price').value * 1000,
+            supplier: document.getElementById('f-supplier').value,
+            note: document.getElementById('f-note').value
+        };
 
-            try {
-                await fetch(CLOUD_URL, {
-                    method: "POST",
-                    mode: "no-cors", 
-                    body: JSON.stringify(payload)
-                });
+        try {
+            // Gửi dữ liệu đi
+            await fetch(CLOUD_URL, {
+                method: "POST",
+                mode: "no-cors", 
+                body: JSON.stringify(payload)
+            });
 
-                // Đợi 1.5 giây để Google xử lý xong rồi load lại
-                setTimeout(() => {
-                    closeModal();
-                    document.getElementById('modal-actions').classList.remove('hidden');
-                    document.getElementById('modal-loading').classList.add('hidden');
-                    fetchData();
-                }, 1500);
-
-            } catch (err) {
-                alert("Lỗi khi gửi dữ liệu!");
+            // Sau khi gửi, đợi 2 giây để Google Sheet cập nhật rồi mới lấy dữ liệu mới
+            setTimeout(async () => {
+                closeModal();
                 document.getElementById('modal-actions').classList.remove('hidden');
                 document.getElementById('modal-loading').classList.add('hidden');
-            }
+                // Xóa các ô nhập để lần sau nhập tiếp
+                ['f-name','f-price','f-supplier','f-note'].forEach(id => document.getElementById(id).value = '');
+                await fetchData();
+            }, 2000);
+
+        } catch (err) {
+            alert("Lỗi kết nối mạng!");
+            document.getElementById('modal-actions').classList.remove('hidden');
+            document.getElementById('modal-loading').classList.add('hidden');
         }
+    }
     </script>
 </body>
 </html>
+
