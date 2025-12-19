@@ -32,25 +32,25 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div>
                 <h1 class="text-3xl font-black italic text-emerald-400 uppercase tracking-tighter">ANH DUY TECH</h1>
-                <p id="status-text" class="text-[10px] text-emerald-500 font-bold uppercase italic tracking-widest">● Cloud System Online</p>
+                <p class="text-[10px] text-emerald-500 font-bold uppercase italic tracking-widest">● Hệ thống Cloud chống mất dữ liệu</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="exportSupplierExcel()" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2"><i class="fas fa-file-excel"></i> XUẤT BÁO CÁO</button>
-                <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2"><i class="fas fa-plus"></i> NHẬP MỚI</button>
-                <button onclick="fetchData()" class="bg-white/5 p-3 rounded-2xl hover:bg-white/10"><i id="refresh-icon" class="fas fa-sync-alt"></i></button>
+                <button onclick="exportSupplierExcel()" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all"><i class="fas fa-file-excel"></i> XUẤT BÁO CÁO</button>
+                <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20"><i class="fas fa-plus"></i> NHẬP MỚI</button>
+                <button onclick="fetchData()" class="bg-white/5 p-3 rounded-2xl hover:bg-white/10 border border-white/10"><i id="refresh-icon" class="fas fa-sync-alt"></i></button>
             </div>
         </div>
 
         <div class="relative mb-6">
             <i class="fas fa-search absolute left-4 top-4 text-gray-500"></i>
-            <input id="search-input" oninput="renderTable()" type="text" placeholder="Tìm tên linh kiện hoặc nhà cung cấp..." class="w-full p-4 pl-12 rounded-2xl outline-none glass focus:border-emerald-500 font-bold">
+            <input id="search-input" oninput="renderTable()" type="text" placeholder="Tìm tên linh kiện hoặc nhà cung cấp để xuất báo cáo..." class="w-full p-4 pl-12 rounded-2xl outline-none glass focus:border-emerald-500 font-bold">
         </div>
 
         <div class="glass rounded-[30px] overflow-hidden border border-white/5 shadow-2xl overflow-x-auto">
             <table class="w-full text-left min-w-[800px]">
                 <thead class="bg-white/5 text-gray-400 text-[10px] uppercase font-black">
                     <tr>
-                        <th class="p-5">Ngày</th><th class="p-5">Linh Kiện</th><th class="p-5">Nhà Cung Cấp</th><th class="p-5 text-center">SL</th><th class="p-5">Giá (đ)</th><th class="p-5 text-center">Thành Tiền</th>
+                        <th class="p-5">Ngày</th><th class="p-5">Linh Kiện</th><th class="p-5">Nhà Cung Cấp</th><th class="p-5 text-center">SL</th><th class="p-5">Giá Nhập</th><th class="p-5 text-center text-emerald-400">Thành Tiền</th>
                     </tr>
                 </thead>
                 <tbody id="inventory-list" class="divide-y divide-white/5"></tbody>
@@ -64,26 +64,27 @@
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <input id="f-date" type="date" class="p-4 rounded-2xl outline-none text-sm" required>
-                    <input id="f-qty" type="number" value="1" class="w-full p-4 rounded-2xl outline-none text-sm text-center font-bold" required>
+                    <input id="f-qty" type="number" value="1" class="p-4 rounded-2xl outline-none text-sm text-center font-bold" required>
                 </div>
                 <input id="f-name" type="text" placeholder="Tên linh kiện..." class="w-full p-4 rounded-2xl outline-none text-sm" required>
                 <input id="f-price" type="number" placeholder="Giá nhập (VD: 500)" class="w-full p-4 rounded-2xl outline-none text-sm text-emerald-400 font-black" required>
                 <input id="f-supplier" type="text" placeholder="Nhà cung cấp..." class="w-full p-4 rounded-2xl outline-none text-sm" required>
-                <textarea id="f-note" placeholder="Ghi chú..." class="w-full p-4 rounded-2xl outline-none text-sm h-16"></textarea>
+                <textarea id="f-note" placeholder="Ghi chú thêm..." class="w-full p-4 rounded-2xl outline-none text-sm h-16"></textarea>
             </div>
             <div id="modal-actions" class="flex gap-4 mt-8">
-                <button type="button" onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400">HỦY</button>
-                <button type="submit" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase text-white">LƯU CLOUD</button>
+                <button type="button" onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400 uppercase text-xs">Hủy</button>
+                <button type="submit" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase text-sm tracking-widest text-white">Lưu & Hiển Thị</button>
             </div>
-            <div id="modal-loading" class="hidden text-center py-4 font-bold text-emerald-500 animate-pulse">ĐANG LƯU...</div>
+            <div id="modal-loading" class="hidden text-center py-4 font-bold text-emerald-500 animate-pulse">ĐANG GỬI LÊN CLOUD...</div>
         </form>
     </div>
 
     <script>
-        const AUTH = { user: "ADMIN", pass: "123456" };
         const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx8i4q-0HJmwSbHY3igg4OIrhHc4hM1HHW9W_NoYoQlaZ5Kihy39k9tbgbxIZGNcr8X/exec"; 
+        const AUTH = { user: "ADMIN", pass: "123456" };
         
-        let allData = []; 
+        let allData = [];      // Dữ liệu từ Google
+        let localData = [];    // Dữ liệu mới vừa nhập (Chưa có trên Google)
 
         function handleLogin(e) {
             e.preventDefault();
@@ -99,7 +100,6 @@
             document.getElementById('f-date').valueAsDate = new Date();
             document.getElementById('f-name').focus();
         }
-
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
         async function fetchData() {
@@ -109,7 +109,11 @@
                 const res = await fetch(CLOUD_URL + "?t=" + Date.now());
                 const newData = await res.json();
                 if(newData && newData.length > 0) {
-                    allData = newData; // Chỉ cập nhật khi có dữ liệu thật
+                    allData = newData;
+                    // Lọc bỏ những dòng trong localData nếu nó đã xuất hiện trong allData
+                    localData = localData.filter(localItem => 
+                        !allData.some(cloudItem => cloudItem[1] === localItem[1] && cloudItem[0] === localItem[0] && cloudItem[3] == localItem[3])
+                    );
                     renderTable();
                 }
             } catch (err) { console.error(err); }
@@ -121,18 +125,24 @@
             const search = document.getElementById('search-input').value.toLowerCase();
             list.innerHTML = '';
 
-            if (allData.length <= 1) {
-                list.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-gray-500 font-bold uppercase">Đang tải dữ liệu Cloud...</td></tr>';
+            // Kết hợp dữ liệu Cloud và dữ liệu Mới nhập chưa đồng bộ
+            const cloudRows = allData.slice(1);
+            const combinedData = [...cloudRows, ...localData].reverse();
+
+            if (combinedData.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-gray-500 font-bold">ĐANG TẢI DỮ LIỆU...</td></tr>';
                 return;
             }
 
-            allData.slice(1).reverse().forEach(item => {
+            combinedData.forEach(item => {
                 const [date, name, supplier, qty, price] = item;
                 if (String(name).toLowerCase().includes(search) || String(supplier).toLowerCase().includes(search)) {
                     const total = (Number(qty) || 0) * (Number(price) || 0);
+                    // Dòng nào từ localData thì cho màu hơi khác để nhận biết đang chờ đồng bộ
+                    const isLocal = localData.includes(item);
                     list.innerHTML += `
-                        <tr class="hover:bg-white/[0.02] border-b border-white/5 transition-all">
-                            <td class="p-5 text-gray-500 text-[11px] font-bold">${date}</td>
+                        <tr class="hover:bg-white/[0.02] border-b border-white/5 transition-all ${isLocal ? 'bg-emerald-500/5' : ''}">
+                            <td class="p-5 text-gray-500 text-[11px] font-bold">${date} ${isLocal ? '⏳' : ''}</td>
                             <td class="p-5 font-black text-emerald-400 uppercase tracking-tighter">${name}</td>
                             <td class="p-5 font-bold text-blue-400 uppercase text-[11px]">${supplier}</td>
                             <td class="p-5 text-center font-black text-white text-lg">${qty}</td>
@@ -156,44 +166,50 @@
                 note: document.getElementById('f-note').value
             };
 
-            // 1. HIỆN NGAY (Cập nhật ảo)
-            const fakeRow = [payload.date, payload.name, payload.supplier, payload.qty, payload.price, payload.note];
-            allData.push(fakeRow); 
+            // 1. LƯU VÀO BIẾN LOCAL RIÊNG (Không bao giờ bị fetchData ghi đè)
+            const newItem = [payload.date, payload.name, payload.supplier, payload.qty, payload.price, payload.note];
+            localData.push(newItem); 
             renderTable();
 
             document.getElementById('modal-actions').classList.add('hidden');
             document.getElementById('modal-loading').classList.remove('hidden');
 
             try {
-                // 2. GỬI LÊN CLOUD
+                // 2. GỬI LÊN GOOGLE
                 await fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
                 
-                // 3. ĐỢI 5 GIÂY RỒI MỚI REFRESH (Để tránh lỗi hiện xong lại mất)
-                setTimeout(async () => {
+                // 3. Đóng modal ngay
+                setTimeout(() => {
                     closeModal();
                     document.getElementById('modal-actions').classList.remove('hidden');
                     document.getElementById('modal-loading').classList.add('hidden');
                     ['f-name','f-price','f-supplier','f-note'].forEach(id => document.getElementById(id).value = '');
-                    await fetchData();
-                }, 5000);
+                    
+                    // Thử cập nhật lại dữ liệu từ Google mỗi 3 giây trong vòng 10 giây
+                    let refreshCount = 0;
+                    const interval = setInterval(() => {
+                        fetchData();
+                        refreshCount++;
+                        if (refreshCount > 3) clearInterval(interval);
+                    }, 3000);
+                }, 500);
 
-            } catch (err) {
-                alert("Lỗi lưu dữ liệu!");
-            }
+            } catch (err) { alert("Lỗi mạng!"); }
         }
 
         function exportSupplierExcel() {
             const search = document.getElementById('search-input').value.trim();
-            const filtered = allData.slice(1).filter(item => 
+            const cloudRows = allData.slice(1);
+            const combined = [...cloudRows, ...localData].filter(item => 
                 String(item[1]).toLowerCase().includes(search.toLowerCase()) || 
                 String(item[2]).toLowerCase().includes(search.toLowerCase())
             );
-            if (filtered.length === 0) return alert("Không có dữ liệu!");
-            const ws = XLSX.utils.json_to_sheet(filtered.map(i => ({
-                "Ngày": i[0], "Tên": i[1], "NCC": i[2], "SL": i[3], "Giá": i[4], "Tổng": i[3]*i[4]
+            if (combined.length === 0) return alert("Không có dữ liệu!");
+            const ws = XLSX.utils.json_to_sheet(combined.map(i => ({
+                "Ngày": i[0], "Linh Kiện": i[1], "Nhà Cung Cấp": i[2], "SL": i[3], "Giá Nhập": i[4], "Thành Tiền": i[3]*i[4]
             })));
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Kho");
-            XLSX.writeFile(wb, `Bao_Cao_${search || 'Tong_Hop'}.xlsx`);
+            XLSX.writeFile(wb, `BaoCao_${search || 'TongHop'}.xlsx`);
         }
     </script>
 </body>
