@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kho Linh Kiện - ANH DUY TECH</title>
+    <title>Kho Cloud - ANH DUY TECH</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         input, textarea { background: #1e293b !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
-        .hidden { display: none !important; }
+        .loading-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="p-4 md:p-6">
@@ -19,227 +19,141 @@
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
         <form id="login-form" action="javascript:void(0)" onsubmit="handleLogin()" class="glass w-full max-w-sm p-10 rounded-[40px] text-center border-t-4 border-emerald-500 shadow-2xl">
             <h1 class="text-3xl font-black italic text-emerald-400 mb-2 uppercase">ANH DUY TECH</h1>
-            <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-8">Hệ Thống Nhập Kho</p>
-            
+            <p class="text-[10px] text-gray-500 font-bold mb-8 tracking-widest uppercase">Cloud Inventory System</p>
             <div class="space-y-4">
-                <div>
-                    <input id="username" name="username" type="text" autocomplete="username" required 
-                        placeholder="Tên đăng nhập" 
-                        class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center border border-white/10">
-                </div>
-                <div>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required 
-                        placeholder="Mật khẩu" 
-                        class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center border border-white/10">
-                </div>
-                <button type="submit" class="w-full bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-500 transition-all">
-                    ĐĂNG NHẬP (ENTER)
-                </button>
+                <input id="username" name="username" type="text" autocomplete="username" placeholder="User" class="w-full p-4 rounded-2xl outline-none text-center border border-white/10" required>
+                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Pass" class="w-full p-4 rounded-2xl outline-none text-center border border-white/10" required>
+                <button type="submit" class="w-full bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-500">Vào Hệ Thống</button>
             </div>
-            <p id="login-err" class="text-red-500 text-xs mt-4 font-bold hidden">Sai mật khẩu hoặc tài khoản!</p>
         </form>
     </div>
 
     <div id="main-content" class="max-w-7xl mx-auto hidden">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-3xl font-black italic text-emerald-400 uppercase tracking-tighter">ANH DUY TECH</h1>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em]">Hệ Thống Quản Lý Nhập Hàng</p>
+                <p id="status" class="text-[10px] text-emerald-500 font-bold uppercase italic tracking-widest">● Đã kết nối Cloud</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="exportToExcel()" class="bg-white/5 hover:bg-emerald-600 px-5 py-3 rounded-2xl font-bold flex items-center gap-2 border border-white/10 transition-all">
-                    <i class="fas fa-file-excel"></i> XUẤT EXCEL
-                </button>
                 <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20">
-                    <i class="fas fa-plus"></i> NHẬP HÀNG
+                    <i class="fas fa-plus"></i> NHẬP MỚI
                 </button>
-                <button onclick="logout()" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-3 rounded-2xl transition-all text-xs font-bold uppercase">Thoát</button>
+                <button onclick="location.reload()" class="bg-white/5 p-3 rounded-2xl hover:bg-white/10"><i class="fas fa-sync-alt"></i></button>
             </div>
         </div>
 
-        <div class="relative mb-6">
-            <i class="fas fa-search absolute left-4 top-4 text-gray-500"></i>
-            <input id="search-input" oninput="renderInventory()" type="text" placeholder="Tìm tên linh kiện hoặc nhà cung cấp..." class="w-full p-4 pl-12 rounded-2xl outline-none glass focus:border-emerald-500">
-        </div>
-
-        <div class="glass rounded-[30px] overflow-hidden border border-white/5 shadow-2xl overflow-x-auto">
-            <table class="w-full text-left min-w-[850px]">
-                <thead class="bg-white/5 text-gray-400 text-[10px] uppercase font-black tracking-widest">
+        <div class="glass rounded-[30px] overflow-hidden border border-white/5 shadow-2xl">
+            <table class="w-full text-left">
+                <thead class="bg-white/5 text-gray-400 text-[10px] uppercase font-black">
                     <tr>
                         <th class="p-5">Ngày</th>
                         <th class="p-5">Linh Kiện</th>
                         <th class="p-5">Nhà Cung Cấp</th>
                         <th class="p-5 text-center">SL</th>
                         <th class="p-5">Giá Nhập (đ)</th>
-                        <th class="p-5 text-center">Thành Tiền</th>
-                        <th class="p-5 text-right">Sửa/Xóa</th>
                     </tr>
                 </thead>
-                <tbody id="inventory-list" class="divide-y divide-white/5"></tbody>
+                <tbody id="inventory-list" class="divide-y divide-white/5">
+                    <tr><td colspan="5" class="p-10 text-center text-gray-500 uppercase font-bold animate-pulse">Đang tải dữ liệu từ Google Sheets...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
 
     <div id="modal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[150] p-4 backdrop-blur-md">
         <form onsubmit="saveData(event)" class="glass w-full max-w-md p-8 rounded-[40px] border-2 border-emerald-500/30">
-            <h2 id="modal-title" class="text-2xl font-black mb-6 uppercase text-emerald-400 italic">Nhập Đơn Hàng</h2>
-            <input type="hidden" id="f-id">
+            <h2 class="text-2xl font-black mb-6 uppercase text-emerald-400 italic">Phiếu Nhập Hàng</h2>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 ml-2">NGÀY</label>
-                        <input id="f-date" type="date" class="w-full p-4 rounded-2xl outline-none text-sm" required>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 ml-2">SỐ LƯỢNG</label>
-                        <input id="f-qty" type="number" class="w-full p-4 rounded-2xl outline-none text-sm text-center font-bold" required>
-                    </div>
+                    <input id="f-date" type="date" class="p-4 rounded-2xl outline-none text-sm" required>
+                    <input id="f-qty" type="number" value="1" class="p-4 rounded-2xl outline-none text-sm text-center font-bold" required>
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2">TÊN LINH KIỆN</label>
-                    <input id="f-name" type="text" placeholder="Tên hàng..." class="w-full p-4 rounded-2xl outline-none text-sm" required>
+                <input id="f-name" type="text" placeholder="Tên linh kiện..." class="w-full p-4 rounded-2xl outline-none text-sm" required>
+                <div class="relative">
+                    <input id="f-price" type="number" placeholder="Giá nhập (VD: 500)" class="w-full p-4 rounded-2xl outline-none text-sm text-emerald-400 font-black pr-16" required>
+                    <span class="absolute right-4 top-4 text-gray-500 font-bold text-xs">.000đ</span>
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2">GIÁ NHẬP (.000đ)</label>
-                    <div class="relative">
-                        <input id="f-price" type="number" placeholder="500" class="w-full p-4 rounded-2xl outline-none text-sm text-emerald-400 font-black pr-16" required>
-                        <span class="absolute right-4 top-4 text-gray-500 font-bold text-xs">.000đ</span>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2">NHÀ CUNG CẤP</label>
-                    <input id="f-supplier" type="text" placeholder="Tên người bán/đại lý" class="w-full p-4 rounded-2xl outline-none text-sm" required>
-                </div>
-                <textarea id="f-note" placeholder="Ghi chú (Serial...)" class="w-full p-4 rounded-2xl outline-none text-sm h-16"></textarea>
+                <input id="f-supplier" type="text" placeholder="Nhà cung cấp..." class="w-full p-4 rounded-2xl outline-none text-sm" required>
+                <textarea id="f-note" placeholder="Ghi chú..." class="w-full p-4 rounded-2xl outline-none text-sm h-16"></textarea>
             </div>
-            <div class="flex gap-4 mt-8">
-                <button type="button" onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:text-white uppercase text-xs">Hủy</button>
-                <button type="submit" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest text-sm">LƯU ĐƠN (ENTER)</button>
+            <div id="modal-actions" class="flex gap-4 mt-8">
+                <button type="button" onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400">HỦY</button>
+                <button type="submit" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-emerald-500/30">LƯU LÊN CLOUD</button>
+            </div>
+            <div id="modal-loading" class="hidden text-center py-4 font-bold text-emerald-500">
+                <i class="fas fa-circle-notch loading-spin mr-2"></i> ĐANG ĐẨY DỮ LIỆU...
             </div>
         </form>
     </div>
 
     <script>
         const AUTH = { user: "admin", pass: "123456" };
-        let inventory = JSON.parse(localStorage.getItem('adtech_inventory')) || [];
+        // DÁN LINK GOOGLE APPS SCRIPT CỦA BẠN VÀO ĐÂY VÀO GIỮA DẤU NHÁY
+        const CLOUD_URL = "DÁN_LINK_WEB_APP_URL_CỦA_BẠN_Ở_ĐÂY"; 
 
         function handleLogin() {
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            
-            if(u === AUTH.user && p === AUTH.pass) {
+            if(document.getElementById('username').value === AUTH.user && document.getElementById('password').value === AUTH.pass) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                renderInventory();
-                // Gợi ý trình duyệt lưu mật khẩu sau khi ẩn màn hình login
-            } else {
-                document.getElementById('login-err').classList.remove('hidden');
-            }
+                fetchData();
+            } else { alert("Sai mật khẩu!"); }
         }
-
-        function logout() { location.reload(); }
 
         function openAddModal() {
-            document.getElementById('f-id').value = '';
-            document.getElementById('modal-title').innerText = "Nhập Hàng Mới";
-            ['f-name','f-price','f-supplier','f-note'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('modal').classList.remove('hidden');
             document.getElementById('f-date').valueAsDate = new Date();
-            document.getElementById('f-qty').value = 1;
-            document.getElementById('modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('f-name').focus(), 100);
-        }
-
-        function openEditModal(id) {
-            const item = inventory.find(x => x.id === id);
-            document.getElementById('f-id').value = item.id;
-            document.getElementById('f-date').value = item.date;
-            document.getElementById('f-name').value = item.name;
-            document.getElementById('f-qty').value = item.qty;
-            document.getElementById('f-price').value = item.price / 1000;
-            document.getElementById('f-supplier').value = item.supplier;
-            document.getElementById('f-note').value = item.note;
-            document.getElementById('modal-title').innerText = "Sửa Đơn Nhập";
-            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('f-name').focus();
         }
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
-        function saveData(e) {
-            e.preventDefault();
-            const id = document.getElementById('f-id').value;
-            const finalPrice = (parseFloat(document.getElementById('f-price').value) || 0) * 1000;
+        async function fetchData() {
+            if(CLOUD_URL === "DÁN_LINK_WEB_APP_URL_CỦA_BẠN_Ở_ĐÂY") return;
+            const res = await fetch(CLOUD_URL);
+            const data = await res.json();
+            const list = document.getElementById('inventory-list');
+            list.innerHTML = '';
+            
+            // Bỏ qua dòng tiêu đề của Sheet
+            data.slice(1).reverse().forEach(item => {
+                list.innerHTML += `
+                    <tr class="hover:bg-white/[0.02] border-b border-white/5 transition-all">
+                        <td class="p-5 text-gray-500 text-[11px] font-bold">${item[0]}</td>
+                        <td class="p-5 font-black text-emerald-400 uppercase tracking-tighter">${item[1]}</td>
+                        <td class="p-5 font-bold text-blue-400 uppercase text-[11px]">${item[2]}</td>
+                        <td class="p-5 text-center font-black text-white text-lg">${item[3]}</td>
+                        <td class="p-5 font-bold text-white tracking-tighter">${(item[4]*1).toLocaleString()}đ</td>
+                    </tr>
+                `;
+            });
+        }
 
-            const data = {
-                name: document.getElementById('f-name').value,
+        async function saveData(e) {
+            e.preventDefault();
+            if(CLOUD_URL === "https://script.google.com/macros/s/AKfycbyCL6l-2n8bWzQwmAJVT4gzxJBDAhLnQz6ofVLRtGw/dev") return alert("Bạn chưa dán link Google Cloud!");
+            
+            document.getElementById('modal-actions').classList.add('hidden');
+            document.getElementById('modal-loading').classList.remove('hidden');
+
+            const payload = {
+                action: "save",
                 date: document.getElementById('f-date').value,
-                qty: parseInt(document.getElementById('f-qty').value) || 0,
-                price: finalPrice,
+                name: document.getElementById('f-name').value,
+                qty: document.getElementById('f-qty').value,
+                price: document.getElementById('f-price').value * 1000,
                 supplier: document.getElementById('f-supplier').value,
                 note: document.getElementById('f-note').value
             };
 
-            if(id) {
-                const idx = inventory.findIndex(x => x.id == id);
-                inventory[idx] = { ...inventory[idx], ...data };
-            } else {
-                inventory.push({ id: Date.now(), ...data });
-            }
-
-            localStorage.setItem('adtech_inventory', JSON.stringify(inventory));
-            renderInventory();
-            closeModal();
-        }
-
-        function deleteItem(id) {
-            if(confirm("Xóa dòng này?")) {
-                inventory = inventory.filter(x => x.id !== id);
-                localStorage.setItem('adtech_inventory', JSON.stringify(inventory));
-                renderInventory();
-            }
-        }
-
-        function renderInventory() {
-            const list = document.getElementById('inventory-list');
-            const search = document.getElementById('search-input').value.toLowerCase();
-            list.innerHTML = '';
-
-            inventory.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
-                if(item.name.toLowerCase().includes(search) || item.supplier.toLowerCase().includes(search)) {
-                    const total = item.qty * item.price;
-                    list.innerHTML += `
-                        <tr class="hover:bg-white/[0.02] border-b border-white/5 transition-all">
-                            <td class="p-5 text-gray-500 text-[11px] font-bold">${item.date}</td>
-                            <td class="p-5 font-black text-emerald-400 uppercase tracking-tighter">
-                                ${item.name}<br><span class="text-[10px] text-gray-500 italic font-normal">${item.note || ''}</span>
-                            </td>
-                            <td class="p-5 font-bold text-blue-400 uppercase text-[11px]">${item.supplier}</td>
-                            <td class="p-5 text-center font-black text-white text-lg">${item.qty}</td>
-                            <td class="p-5 font-bold text-slate-300 tracking-tighter">${item.price.toLocaleString()}đ</td>
-                            <td class="p-5 text-center font-black text-white tracking-tighter">${total.toLocaleString()}đ</td>
-                            <td class="p-5 text-right flex justify-end gap-2 items-center h-[90px]">
-                                <button onclick="openEditModal(${item.id})" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-600 hover:text-white transition-all"><i class="fas fa-edit text-xs"></i></button>
-                                <button onclick="deleteItem(${item.id})" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-600 hover:text-white transition-all"><i class="fas fa-trash text-xs"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                }
+            await fetch(CLOUD_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
             });
-        }
 
-        function exportToExcel() {
-            const search = document.getElementById('search-input').value.toLowerCase();
-            const filteredData = inventory.filter(i => i.name.toLowerCase().includes(search) || i.supplier.toLowerCase().includes(search));
-            if(filteredData.length === 0) return alert("Không có dữ liệu!");
-            
-            const dataToExport = filteredData.map(i => ({
-                "Ngày Nhập": i.date, "Tên Linh Kiện": i.name, "Nhà Cung Cấp": i.supplier,
-                "Số Lượng": i.qty, "Giá Nhập": i.price, "Thành Tiền": i.qty * i.price, "Ghi Chú": i.note
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(dataToExport);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Kho");
-            XLSX.writeFile(wb, search ? `Kho_ADTech_${search}.xlsx` : `Kho_ADTech_Tong.xlsx`);
+            closeModal();
+            document.getElementById('modal-actions').classList.remove('hidden');
+            document.getElementById('modal-loading').classList.add('hidden');
+            fetchData();
         }
     </script>
 </body>
