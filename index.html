@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Nhập hàng - ANH DUY TECH</title>
+    <title>Kho Linh Kiện - ANH DUY TECH</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -18,14 +18,13 @@
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
         <div class="glass w-full max-w-sm p-10 rounded-[40px] text-center border-t-4 border-emerald-500 shadow-2xl">
-            <h1 class="text-3xl font-black italic text-emerald-400 mb-2">ANH DUY TECH</h1>
+            <h1 class="text-3xl font-black italic text-emerald-400 mb-2 uppercase">ANH DUY TECH</h1>
             <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-8">Hệ Thống Nhập Hàng</p>
             <div class="space-y-4">
-                <input id="user" type="text" placeholder="Tên đăng nhập" class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center">
-                <input id="pass" type="password" placeholder="Mật khẩu" class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center">
-                <button onclick="handleLogin()" class="w-full bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-500 transition-all">Vào Hệ Thống</button>
+                <input id="user" type="text" placeholder="User" class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center">
+                <input id="pass" type="password" placeholder="Pass" class="w-full p-4 rounded-2xl outline-none focus:border-emerald-500 text-center">
+                <button onclick="handleLogin()" class="w-full bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-500 transition-all">ĐĂNG NHẬP</button>
             </div>
-            <p id="login-err" class="text-red-500 text-xs mt-4 font-bold hidden">Sai thông tin!</p>
         </div>
     </div>
 
@@ -33,14 +32,14 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div>
                 <h1 class="text-3xl font-black italic text-emerald-400 uppercase tracking-tighter">ANH DUY TECH</h1>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em]">Quản Lý Nhập Linh Kiện</p>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em]">Kho Linh Kiện & Phụ Kiện</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="exportToExcel()" class="bg-white/5 hover:bg-emerald-600 px-5 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all border border-white/10">
+                <button onclick="exportToExcel()" class="bg-white/5 hover:bg-emerald-600 px-5 py-3 rounded-2xl font-bold flex items-center gap-2 border border-white/10 transition-all">
                     <i class="fas fa-file-excel"></i> XUẤT EXCEL
                 </button>
-                <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20">
-                    <i class="fas fa-plus"></i> NHẬP MỚI
+                <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all">
+                    <i class="fas fa-plus"></i> NHẬP HÀNG
                 </button>
                 <button onclick="logout()" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-3 rounded-2xl transition-all">
                     <i class="fas fa-power-off"></i>
@@ -58,11 +57,12 @@
                 <thead class="bg-white/5 text-gray-400 text-[10px] uppercase font-black tracking-widest">
                     <tr>
                         <th class="p-5">Ngày</th>
-                        <th class="p-5">Tên Linh Kiện / Ghi Chú</th>
-                        <th class="p-5 text-center">Số Lượng</th>
-                        <th class="p-5">Giá Nhập</th>
-                        <th class="p-5">Nhà Cung Cấp</th>
-                        <th class="p-5 text-right">Quản Lý</th>
+                        <th class="p-5">Linh Kiện</th>
+                        <th class="p-5 text-center">SL</th>
+                        <th class="p-5">Giá Nhập (đ)</th>
+                        <th class="p-5 text-center">Thành Tiền</th>
+                        <th class="p-5">Đại Lý</th>
+                        <th class="p-5 text-right">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody id="inventory-list" class="divide-y divide-white/5"></tbody>
@@ -71,37 +71,40 @@
     </div>
 
     <div id="modal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[150] p-4 backdrop-blur-md">
-        <div class="glass w-full max-w-md p-8 rounded-[40px] border-2 border-emerald-500/30">
-            <h2 id="modal-title" class="text-2xl font-black mb-6 uppercase text-emerald-400 italic">Phiếu Nhập Hàng</h2>
+        <div class="glass w-full max-w-md p-8 rounded-[40px] border-2 border-emerald-500/30 shadow-2xl">
+            <h2 id="modal-title" class="text-2xl font-black mb-6 uppercase text-emerald-400 italic">Nhập Đơn Hàng</h2>
             <input type="hidden" id="f-id">
             <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2">NGÀY NHẬP</label>
-                    <input id="f-date" type="date" class="w-full p-4 rounded-2xl outline-none text-sm">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2">TÊN LINH KIỆN</label>
-                    <input id="f-name" type="text" placeholder="VD: RAM DDR4 8GB Samsung" class="w-full p-4 rounded-2xl outline-none text-sm">
-                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-[10px] font-bold text-gray-500 ml-2">SỐ LƯỢNG</label>
-                        <input id="f-qty" type="number" class="w-full p-4 rounded-2xl outline-none text-sm text-center">
+                        <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Ngày nhập</label>
+                        <input id="f-date" type="date" class="w-full p-4 rounded-2xl outline-none text-sm">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-gray-500 ml-2">GIÁ NHẬP / CÁI</label>
-                        <input id="f-price" type="number" placeholder="đ" class="w-full p-4 rounded-2xl outline-none text-sm">
+                        <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Số lượng</label>
+                        <input id="f-qty" type="number" class="w-full p-4 rounded-2xl outline-none text-sm text-center font-bold">
                     </div>
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 ml-2">NHÀ CUNG CẤP</label>
-                    <input id="f-supplier" type="text" placeholder="Tên đại lý" class="w-full p-4 rounded-2xl outline-none text-sm">
+                    <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Tên linh kiện</label>
+                    <input id="f-name" type="text" placeholder="Ví dụ: SSD Kingston 240GB" class="w-full p-4 rounded-2xl outline-none text-sm">
                 </div>
-                <textarea id="f-note" placeholder="Ghi chú thêm (Serial, tình trạng...)" class="w-full p-4 rounded-2xl outline-none text-sm h-20"></textarea>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Giá nhập (Chỉ nhập số hàng nghìn)</label>
+                    <div class="relative">
+                        <input id="f-price" type="number" placeholder="500" class="w-full p-4 rounded-2xl outline-none text-sm text-emerald-400 font-black pr-16">
+                        <span class="absolute right-4 top-4 text-gray-500 font-bold">.000 VNĐ</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 ml-2 uppercase">Nhà cung cấp</label>
+                    <input id="f-supplier" type="text" class="w-full p-4 rounded-2xl outline-none text-sm">
+                </div>
+                <textarea id="f-note" placeholder="Ghi chú (Serial, Mã hàng...)" class="w-full p-4 rounded-2xl outline-none text-sm h-20"></textarea>
             </div>
             <div class="flex gap-4 mt-8">
-                <button onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:text-white">HỦY</button>
-                <button onclick="saveData()" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest">LƯU ĐƠN</button>
+                <button onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400 hover:text-white uppercase text-xs">Hủy</button>
+                <button onclick="saveData()" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase tracking-widest text-sm shadow-lg shadow-emerald-500/30">Xác Nhận Lưu</button>
             </div>
         </div>
     </div>
@@ -111,15 +114,11 @@
         let inventory = JSON.parse(localStorage.getItem('adtech_inventory')) || [];
 
         function handleLogin() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            if(u === AUTH.user && p === AUTH.pass) {
+            if(document.getElementById('user').value === AUTH.user && document.getElementById('pass').value === AUTH.pass) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 renderInventory();
-            } else {
-                document.getElementById('login-err').classList.remove('hidden');
-            }
+            } else { alert("Sai tài khoản!"); }
         }
 
         function logout() { location.reload(); }
@@ -129,7 +128,6 @@
             document.getElementById('modal-title').innerText = "Nhập Hàng Mới";
             ['f-name','f-price','f-supplier','f-note'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('f-date').valueAsDate = new Date();
-            // MẶC ĐỊNH SỐ LƯỢNG LÀ 1
             document.getElementById('f-qty').value = 1;
             document.getElementById('modal').classList.remove('hidden');
         }
@@ -140,7 +138,8 @@
             document.getElementById('f-date').value = item.date;
             document.getElementById('f-name').value = item.name;
             document.getElementById('f-qty').value = item.qty;
-            document.getElementById('f-price').value = item.price;
+            // KHI SỬA: CHIA LẠI CHO 1000 ĐỂ HIỆN SỐ NGẮN
+            document.getElementById('f-price').value = item.price / 1000;
             document.getElementById('f-supplier').value = item.supplier;
             document.getElementById('f-note').value = item.note;
             document.getElementById('modal-title').innerText = "Sửa Đơn Nhập";
@@ -151,16 +150,20 @@
 
         function saveData() {
             const id = document.getElementById('f-id').value;
+            // TỰ ĐỘNG NHÂN 1000 KHI LƯU
+            const rawPrice = parseFloat(document.getElementById('f-price').value) || 0;
+            const finalPrice = rawPrice * 1000;
+
             const data = {
                 name: document.getElementById('f-name').value,
                 date: document.getElementById('f-date').value,
                 qty: parseInt(document.getElementById('f-qty').value) || 0,
-                price: parseInt(document.getElementById('f-price').value) || 0,
+                price: finalPrice,
                 supplier: document.getElementById('f-supplier').value,
                 note: document.getElementById('f-note').value
             };
 
-            if(!data.name) return alert("Vui lòng nhập tên linh kiện!");
+            if(!data.name) return alert("Nhập tên linh kiện!");
 
             if(id) {
                 const idx = inventory.findIndex(x => x.id == id);
@@ -175,7 +178,7 @@
         }
 
         function deleteItem(id) {
-            if(confirm("Xóa dòng nhập hàng này?")) {
+            if(confirm("Xóa dòng này?")) {
                 inventory = inventory.filter(x => x.id !== id);
                 localStorage.setItem('adtech_inventory', JSON.stringify(inventory));
                 renderInventory();
@@ -189,20 +192,22 @@
 
             inventory.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
                 if(item.name.toLowerCase().includes(search) || item.supplier.toLowerCase().includes(search)) {
+                    const total = item.qty * item.price;
                     list.innerHTML += `
                         <tr class="hover:bg-white/[0.02] border-b border-white/5 transition-all">
-                            <td class="p-5 text-gray-500 text-xs">${item.date}</td>
+                            <td class="p-5 text-gray-500 text-[11px] font-bold">${item.date}</td>
                             <td class="p-5">
-                                <div class="font-black text-emerald-400 uppercase">${item.name}</div>
-                                <div class="text-[11px] text-gray-500 italic mt-1">${item.note || ''}</div>
+                                <div class="font-black text-emerald-400 uppercase tracking-tighter">${item.name}</div>
+                                <div class="text-[10px] text-gray-500 italic mt-1">${item.note || ''}</div>
                             </td>
                             <td class="p-5 text-center font-black text-white text-lg">${item.qty}</td>
-                            <td class="p-5 font-black text-white tracking-tighter">${item.price.toLocaleString()}đ</td>
-                            <td class="p-5 text-gray-400 text-[11px] font-bold uppercase">${item.supplier}</td>
+                            <td class="p-5 font-bold text-slate-300 tracking-tighter">${item.price.toLocaleString()}đ</td>
+                            <td class="p-5 text-center font-black text-white tracking-tighter">${total.toLocaleString()}đ</td>
+                            <td class="p-5 text-gray-400 text-[11px] font-black uppercase">${item.supplier}</td>
                             <td class="p-5 text-right">
                                 <div class="flex justify-end gap-2">
-                                    <button onclick="openEditModal(${item.id})" class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 hover:bg-blue-600 hover:text-white transition-all"><i class="fas fa-edit text-xs"></i></button>
-                                    <button onclick="deleteItem(${item.id})" class="w-9 h-9 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-600 hover:text-white transition-all"><i class="fas fa-trash text-xs"></i></button>
+                                    <button onclick="openEditModal(${item.id})" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-600 hover:text-white transition-all"><i class="fas fa-edit text-xs"></i></button>
+                                    <button onclick="deleteItem(${item.id})" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-600 hover:text-white transition-all"><i class="fas fa-trash text-xs"></i></button>
                                 </div>
                             </td>
                         </tr>
@@ -214,15 +219,14 @@
         function exportToExcel() {
             if(inventory.length === 0) return alert("Không có dữ liệu!");
             const dataToExport = inventory.map(i => ({
-                "Ngày Nhập": i.date, "Tên Linh Kiện": i.name,
-                "Số Lượng": i.qty, "Giá Nhập": i.price, 
-                "Tổng Tiền": i.qty * i.price, 
+                "Ngày": i.date, "Linh Kiện": i.name, "Số Lượng": i.qty, 
+                "Giá Nhập": i.price, "Thành Tiền": i.qty * i.price, 
                 "Nhà Cung Cấp": i.supplier, "Ghi Chú": i.note
             }));
             const ws = XLSX.utils.json_to_sheet(dataToExport);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Kho");
-            XLSX.writeFile(wb, `NhapHang_AnhDuyTech_${new Date().toLocaleDateString()}.xlsx`);
+            XLSX.writeFile(wb, `Kho_ADTech_${new Date().toLocaleDateString()}.xlsx`);
         }
     </script>
 </body>
