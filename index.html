@@ -15,30 +15,34 @@
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .row-pending { border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.03); }
         .row-synced { border-left: 4px solid #10b981; }
+        .is-guest .admin-only { display: none !important; }
     </style>
 </head>
 <body class="p-4 md:p-6">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
         <form onsubmit="handleLogin(event)" class="glass w-full max-w-sm p-10 rounded-[40px] text-center border-t-4 border-emerald-500 shadow-2xl">
-            <h1 class="text-3xl font-black italic text-emerald-400 mb-6 uppercase">ANH DUY TECH</h1>
+            <h1 class="text-3xl font-black italic text-emerald-400 mb-6 uppercase tracking-tighter">ANH DUY TECH</h1>
             <div class="space-y-4">
-                <input id="login-user" type="text" placeholder="Tên đăng nhập" class="w-full p-4 rounded-2xl outline-none text-center border border-white/10" required>
-                <input id="login-pass" type="password" placeholder="Mật khẩu" class="w-full p-4 rounded-2xl outline-none text-center border border-white/10" required>
-                <button type="submit" class="w-full bg-emerald-600 py-4 rounded-2xl font-black uppercase hover:bg-emerald-500 transition-all tracking-widest">VÀO HỆ THỐNG</button>
+                <input id="login-user" type="text" placeholder="Tên đăng nhập (admin/guest)" class="w-full p-4 rounded-2xl outline-none text-center border border-white/10" required>
+                <input id="login-pass" type="password" placeholder="Mật khẩu (Guest bỏ trống)" class="w-full p-4 rounded-2xl outline-none text-center border border-white/10">
+                <button type="submit" class="w-full bg-emerald-600 py-4 rounded-2xl font-black uppercase hover:bg-emerald-500 transition-all tracking-widest">ĐĂNG NHẬP</button>
             </div>
         </form>
     </div>
 
     <div id="main-content" class="max-w-7xl mx-auto hidden">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-                <h1 class="text-3xl font-black italic text-emerald-400 uppercase tracking-tighter">ANH DUY TECH</h1>
-                <p class="text-[10px] text-emerald-500 font-bold uppercase italic tracking-widest">● Tự động sắp xếp ngày mới nhất</p>
+                <h1 class="text-3xl font-black italic text-emerald-400 uppercase tracking-tighter leading-none">ANH DUY TECH</h1>
+                <div class="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                    <p>EMAIL: <span class="text-emerald-500">ANHDUY85VT@GMAIL.COM</span></p>
+                    <p>DONATE: <a href="https://paypal.me/anhduy85vt" target="_blank" class="text-blue-400 hover:text-blue-300 underline">PAYPAL</a></p>
+                </div>
             </div>
             <div class="flex gap-2">
                 <button onclick="exportExcel()" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all"><i class="fas fa-file-excel"></i> XUẤT BÁO CÁO</button>
-                <button onclick="openModal()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20"><i class="fas fa-plus"></i> NHẬP MỚI</button>
+                <button onclick="openModal()" class="admin-only bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20"><i class="fas fa-plus"></i> NHẬP MỚI</button>
                 <button onclick="fetchData()" class="bg-white/5 p-3 rounded-2xl hover:bg-white/10 border border-white/10"><i id="refresh-icon" class="fas fa-sync-alt"></i></button>
             </div>
         </div>
@@ -52,7 +56,7 @@
             <table class="w-full text-left min-w-[900px]">
                 <thead class="bg-white/5 text-gray-400 text-[10px] uppercase font-black">
                     <tr>
-                        <th class="p-5">Ngày Nhập</th><th class="p-5">Linh Kiện</th><th class="p-5">Nhà Cung Cấp</th><th class="p-5 text-center">SL</th><th class="p-5">Giá Nhập</th><th class="p-5 text-center">Thành Tiền</th><th class="p-5 text-right">Thao Tác</th>
+                        <th class="p-5">Ngày Nhập</th><th class="p-5">Linh Kiện</th><th class="p-5">Nhà Cung Cấp</th><th class="p-5 text-center">SL</th><th class="p-5">Giá Nhập</th><th class="p-5 text-center">Thành Tiền</th><th class="p-5 text-right admin-only">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody id="inventory-list" class="divide-y divide-white/5"></tbody>
@@ -62,7 +66,7 @@
 
     <div id="modal" class="fixed inset-0 bg-black/95 hidden flex items-center justify-center z-[150] p-4 backdrop-blur-md">
         <form id="entry-form" onsubmit="handleSave(event)" class="glass w-full max-w-md p-8 rounded-[40px] border-2 border-emerald-500/30">
-            <h2 id="modal-title" class="text-2xl font-black mb-6 uppercase text-emerald-400 italic font-italic">Phiếu Nhập Hàng</h2>
+            <h2 id="modal-title" class="text-2xl font-black mb-6 uppercase text-emerald-400 italic">Phiếu Nhập Hàng</h2>
             <input type="hidden" id="f-id">
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
@@ -70,12 +74,12 @@
                     <input id="f-qty" type="number" class="p-4 rounded-2xl outline-none text-sm text-center font-bold" required>
                 </div>
                 <input id="f-name" type="text" placeholder="Tên linh kiện..." class="w-full p-4 rounded-2xl outline-none text-sm" required>
-                <input id="f-price" type="number" placeholder="Giá nhập (.000 VNĐ)" class="w-full p-4 rounded-2xl outline-none text-sm text-emerald-400 font-black" required>
+                <input id="f-price" type="number" placeholder="Giá nhập (.000đ)" class="w-full p-4 rounded-2xl outline-none text-sm text-emerald-400 font-black" required>
                 <input id="f-supplier" type="text" placeholder="Nhà cung cấp..." class="w-full p-4 rounded-2xl outline-none text-sm" required>
-                <textarea id="f-note" placeholder="Ghi chú (Không bắt buộc)..." class="w-full p-4 rounded-2xl outline-none text-sm h-16"></textarea>
+                <textarea id="f-note" placeholder="Ghi chú..." class="w-full p-4 rounded-2xl outline-none text-sm h-16"></textarea>
             </div>
             <div class="flex gap-4 mt-8">
-                <button type="button" onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400 uppercase text-xs hover:text-white">Hủy</button>
+                <button type="button" onclick="closeModal()" class="flex-1 py-4 font-bold text-gray-400 uppercase text-xs">Hủy</button>
                 <button type="submit" class="flex-1 bg-emerald-600 py-4 rounded-2xl font-black uppercase text-sm">Lưu Dữ Liệu</button>
             </div>
         </form>
@@ -85,93 +89,32 @@
         const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx8i4q-0HJmwSbHY3igg4OIrhHc4hM1HHW9W_NoYoQlaZ5Kihy39k9tbgbxIZGNcr8X/exec";
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "123456";
+        const GUEST_USER = "guest";
         
         let inventory = JSON.parse(localStorage.getItem('adtech_data')) || [];
+        let isGuest = false;
         let syncTimers = {};
 
         function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('login-user').value;
+            const u = document.getElementById('login-user').value.toLowerCase();
             const p = document.getElementById('login-pass').value;
+
             if(u === ADMIN_USER && p === ADMIN_PASS) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                renderTable();
-                fetchData(); 
-            } else { alert("Tên đăng nhập hoặc mật khẩu sai!"); }
+                isGuest = false;
+                startApp();
+            } else if(u === GUEST_USER) {
+                isGuest = true;
+                document.body.classList.add('is-guest');
+                startApp();
+            } else { alert("Thông tin đăng nhập không chính xác!"); }
         }
 
-        function openModal(id = null) {
-            document.getElementById('entry-form').reset();
-            const modalTitle = document.getElementById('modal-title');
-            const fId = document.getElementById('f-id');
-
-            if(id) {
-                modalTitle.innerText = "Sửa Đơn Hàng";
-                fId.value = id;
-                const item = inventory.find(x => x.id == id);
-                if(item) {
-                    document.getElementById('f-date').value = item.date;
-                    document.getElementById('f-name').value = item.name;
-                    document.getElementById('f-qty').value = item.qty;
-                    document.getElementById('f-price').value = item.price / 1000;
-                    document.getElementById('f-supplier').value = item.supplier;
-                    document.getElementById('f-note').value = item.note || "";
-                }
-            } else {
-                modalTitle.innerText = "Nhập Hàng Mới";
-                fId.value = "";
-                document.getElementById('f-date').valueAsDate = new Date();
-                document.getElementById('f-qty').value = 1;
-            }
-            document.getElementById('modal').classList.remove('hidden');
-        }
-
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-
-        function handleSave(e) {
-            e.preventDefault();
-            const id = document.getElementById('f-id').value || Date.now().toString();
-            
-            const itemData = {
-                id: id,
-                date: document.getElementById('f-date').value,
-                name: document.getElementById('f-name').value,
-                qty: parseInt(document.getElementById('f-qty').value),
-                price: parseFloat(document.getElementById('f-price').value) * 1000,
-                supplier: document.getElementById('f-supplier').value,
-                note: document.getElementById('f-note').value,
-                synced: false
-            };
-
-            const index = inventory.findIndex(x => x.id == id);
-            if(index > -1) inventory[index] = itemData;
-            else inventory.unshift(itemData);
-
-            saveLocal();
+        function startApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
             renderTable();
-            closeModal();
-
-            if(syncTimers[id]) clearTimeout(syncTimers[id]);
-            syncTimers[id] = setTimeout(() => syncToCloud(id), 4000);
-        }
-
-        async function syncToCloud(id) {
-            const item = inventory.find(x => x.id == id);
-            if(!item) return;
-            try {
-                await fetch(CLOUD_URL, { 
-                    method: "POST", 
-                    mode: "no-cors", 
-                    body: JSON.stringify({ action: "save", ...item }) 
-                });
-                const idx = inventory.findIndex(x => x.id == id);
-                if(idx > -1) {
-                    inventory[idx].synced = true;
-                    saveLocal();
-                    renderTable();
-                }
-            } catch (err) { console.error("Sync Error:", id); }
+            fetchData();
         }
 
         function renderTable() {
@@ -179,7 +122,6 @@
             const search = document.getElementById('search-input').value.toLowerCase();
             list.innerHTML = '';
 
-            // SẮP XẾP: Ngày mới nhất lên trước
             let sortedData = [...inventory].sort((a, b) => new Date(b.date) - new Date(a.date));
 
             sortedData.forEach(item => {
@@ -195,7 +137,7 @@
                             <td class="p-5 text-center font-black text-white text-lg">${item.qty}</td>
                             <td class="p-5 font-bold text-slate-300 tracking-tighter">${item.price.toLocaleString()}đ</td>
                             <td class="p-5 text-center font-black text-white tracking-tighter">${total.toLocaleString()}đ</td>
-                            <td class="p-5 text-right">
+                            <td class="p-5 text-right admin-only">
                                 <button onclick="openModal('${item.id}')" class="text-blue-400 hover:text-white mr-4"><i class="fas fa-edit"></i></button>
                                 <button onclick="deleteItem('${item.id}')" class="text-red-500 hover:text-white"><i class="fas fa-trash"></i></button>
                             </td>
@@ -203,6 +145,66 @@
                     `;
                 }
             });
+        }
+
+        // Các hàm xử lý dữ liệu giữ nguyên từ bản trước
+        function openModal(id = null) {
+            if(isGuest) return;
+            document.getElementById('entry-form').reset();
+            const fId = document.getElementById('f-id');
+            if(id) {
+                document.getElementById('modal-title').innerText = "Sửa Đơn Hàng";
+                fId.value = id;
+                const item = inventory.find(x => x.id == id);
+                if(item) {
+                    document.getElementById('f-date').value = item.date;
+                    document.getElementById('f-name').value = item.name;
+                    document.getElementById('f-qty').value = item.qty;
+                    document.getElementById('f-price').value = item.price / 1000;
+                    document.getElementById('f-supplier').value = item.supplier;
+                    document.getElementById('f-note').value = item.note || "";
+                }
+            } else {
+                document.getElementById('modal-title').innerText = "Nhập Hàng Mới";
+                fId.value = "";
+                document.getElementById('f-date').valueAsDate = new Date();
+                document.getElementById('f-qty').value = 1;
+            }
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+        function handleSave(e) {
+            e.preventDefault();
+            if(isGuest) return;
+            const id = document.getElementById('f-id').value || Date.now().toString();
+            const itemData = {
+                id: id,
+                date: document.getElementById('f-date').value,
+                name: document.getElementById('f-name').value,
+                qty: parseInt(document.getElementById('f-qty').value),
+                price: parseFloat(document.getElementById('f-price').value) * 1000,
+                supplier: document.getElementById('f-supplier').value,
+                note: document.getElementById('f-note').value,
+                synced: false
+            };
+            const index = inventory.findIndex(x => x.id == id);
+            if(index > -1) inventory[index] = itemData;
+            else inventory.unshift(itemData);
+            saveLocal(); renderTable(); closeModal();
+            if(syncTimers[id]) clearTimeout(syncTimers[id]);
+            syncTimers[id] = setTimeout(() => syncToCloud(id), 4000);
+        }
+
+        async function syncToCloud(id) {
+            const item = inventory.find(x => x.id == id);
+            if(!item || isGuest) return;
+            try {
+                await fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "save", ...item }) });
+                const idx = inventory.findIndex(x => x.id == id);
+                if(idx > -1) { inventory[idx].synced = true; saveLocal(); renderTable(); }
+            } catch (err) { console.error("Sync Error"); }
         }
 
         async function fetchData() {
@@ -217,32 +219,29 @@
                     }));
                     const pending = inventory.filter(x => !x.synced);
                     inventory = [...pending, ...cloudData];
-                    saveLocal();
-                    renderTable();
+                    saveLocal(); renderTable();
                 }
             } catch (e) { console.log("Cloud update error"); }
             icon.classList.remove('loading-spin');
         }
 
         function deleteItem(id) {
-            if(confirm("Xóa dòng này vĩnh viễn?")) {
-                inventory = inventory.filter(x => x.id != id);
-                saveLocal();
-                renderTable();
-                fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "delete", id: id }) });
-            }
+            if(isGuest || !confirm("Xóa dòng này?")) return;
+            inventory = inventory.filter(x => x.id != id);
+            saveLocal(); renderTable();
+            fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "delete", id: id }) });
         }
 
         function saveLocal() { localStorage.setItem('adtech_data', JSON.stringify(inventory)); }
 
         function exportExcel() {
             const search = document.getElementById('search-input').value.trim();
-            const filtered = inventory.filter(i => i.supplier.toLowerCase().includes(search.toLowerCase()));
+            const filtered = inventory.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || i.supplier.toLowerCase().includes(search.toLowerCase()));
             const ws = XLSX.utils.json_to_sheet(filtered.map(i => ({
-                "Ngày": i.date, "Linh Kiện": i.name, "NCC": i.supplier, "Số Lượng": i.qty, "Đơn Giá": i.price, "Thành Tiền": i.qty*i.price, "Ghi Chú": i.note
+                "Ngày": i.date, "Linh Kiện": i.name, "NCC": i.supplier, "SL": i.qty, "Giá": i.price, "Tổng": i.qty*i.price
             })));
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "BaoCaoKho");
-            XLSX.writeFile(wb, `ADTech_${search || 'ToanBo'}.xlsx`);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Kho");
+            XLSX.writeFile(wb, `ADTech_${search || 'Full'}.xlsx`);
         }
     </script>
 </body>
